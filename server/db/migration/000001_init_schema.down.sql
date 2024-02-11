@@ -1,0 +1,10 @@
+-- Drop tables
+DROP TABLE IF EXISTS stripe_customers;
+DROP TABLE IF EXISTS purchases;
+DROP TABLE IF EXISTS user_progress;
+DROP TABLE IF EXISTS muxes;
+DROP TABLE IF EXISTS chapters;
+DROP TABLE IF EXISTS attachments;
+DROP TABLE IF EXISTS courses;
+DROP TABLE IF EXISTS categories;
+DROP TABLE IF EXISTS users;
