@@ -1,13 +1,13 @@
-import type { Config } from "tailwindcss"
+import type { Config } from "tailwindcss";
 
 const config = {
   darkMode: ["class"],
   content: [
-    './pages/**/*.{ts,tsx}',
-    './components/**/*.{ts,tsx}',
-    './app/**/*.{ts,tsx}',
-    './src/**/*.{ts,tsx}',
-	],
+    "./pages/**/*.{ts,tsx}",
+    "./components/**/*.{ts,tsx}",
+    "./app/**/*.{ts,tsx}",
+    "./src/**/*.{ts,tsx}",
+  ],
   prefix: "",
   theme: {
     container: {
@@ -52,6 +52,32 @@ const config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        daintree: {
+          "50": "#f0fafb",
+          "100": "#d9f1f4",
+          "200": "#b7e2ea",
+          "300": "#86cdda",
+          "400": "#4dafc3",
+          "500": "#3293a8",
+          "600": "#2c778e",
+          "700": "#2a6174",
+          "800": "#295161",
+          "900": "#264553",
+          "950": "#0f2028",
+        },
+        honeysuckle: {
+          "50": "#feffe5",
+          "100": "#fbffc7",
+          "200": "#f5ff95",
+          "300": "#edff72",
+          "400": "#d9f625",
+          "500": "#bbdd05",
+          "600": "#91b100",
+          "700": "#6d8605",
+          "800": "#56690b",
+          "900": "#48590e",
+          "950": "#263201",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -75,6 +101,6 @@ const config = {
     },
   },
   plugins: [require("tailwindcss-animate")],
-} satisfies Config
+} satisfies Config;
 
-export default config
+export default config;
