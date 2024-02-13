@@ -16,7 +16,13 @@ migratedown:
 sqlc:
 	cd server && sqlc generate
 
-run:
+test:
+	cd server && go test -v -cover -short ./...
+
+backend:
 	cd server && go run main.go
+
+frontend:
+	cd client && npm run dev
 
 .PHONY: postgres createdb dropdb migrateup migratedown
