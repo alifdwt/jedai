@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func createRandomCatogory(t *testing.T) Category {
+func createRandomCategory(t *testing.T) Category {
 	arg := CreateCategoryParams{
 		ID:   util.RandomString(6),
 		Name: util.RandomOwner(),
@@ -26,11 +26,11 @@ func createRandomCatogory(t *testing.T) Category {
 }
 
 func TestCreateCategory(t *testing.T) {
-	createRandomCatogory(t)
+	createRandomCategory(t)
 }
 
 func TestGetCategory(t *testing.T) {
-	category1 := createRandomCatogory(t)
+	category1 := createRandomCategory(t)
 	category2, err := testQueries.GetCategory(context.Background(), category1.ID)
 	require.NoError(t, err)
 	require.NotEmpty(t, category2)
@@ -40,7 +40,7 @@ func TestGetCategory(t *testing.T) {
 }
 
 func TestUpdateCategory(t *testing.T) {
-	category1 := createRandomCatogory(t)
+	category1 := createRandomCategory(t)
 
 	arg := UpdateCategoryParams{
 		ID:   category1.ID,
@@ -58,7 +58,7 @@ func TestUpdateCategory(t *testing.T) {
 }
 
 func TestDeleteCategory(t *testing.T) {
-	category1 := createRandomCatogory(t)
+	category1 := createRandomCategory(t)
 	err := testQueries.DeleteCategory(context.Background(), category1.ID)
 	require.NoError(t, err)
 
@@ -70,7 +70,7 @@ func TestDeleteCategory(t *testing.T) {
 
 func TestListCategories(t *testing.T) {
 	for i := 0; i < 10; i++ {
-		createRandomCatogory(t)
+		createRandomCategory(t)
 	}
 
 	arg := ListCategoriesParams{

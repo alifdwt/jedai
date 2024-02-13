@@ -9,7 +9,7 @@ INSERT INTO courses (
   is_published,
   category_id
 ) VALUES (
-  $1, $2, $3. $4, $5, $6, $7, $8
+  $1, $2, $3, $4, $5, $6, $7, $8
 ) RETURNING *;
 
 -- name: GetCourse :one
@@ -20,9 +20,9 @@ LIMIT 1;
 
 -- name: ListCourses :many
 SELECT * FROM courses
-ORDED BY created_at DESC
+ORDER BY created_at DESC
 LIMIT $1
-OFFSET $2
+OFFSET $2;
 
 -- name: ListCoursesByUserID :many
 SELECT * FROM courses
