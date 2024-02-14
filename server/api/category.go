@@ -14,6 +14,11 @@ type createCategoryRequest struct {
 	Name string `json:"name" binding:"required"`
 }
 
+type categoryResponse struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+}
+
 func (server *Server) createCategory(ctx *gin.Context) {
 	var req createCategoryRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {

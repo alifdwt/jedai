@@ -14,20 +14,26 @@ INSERT INTO courses (
 
 -- name: GetCourse :one
 SELECT * FROM courses
-WHERE id = $1
-    AND user_id = $2
+INNER JOIN categories ON courses.category_id = categories.id
+INNER JOIN users ON courses.user_id = users.username
+WHERE courses.id = $1 AND courses.user_id = $2
+ORDER BY courses.created_at DESC
 LIMIT 1;
 
 -- name: ListCourses :many
 SELECT * FROM courses
-ORDER BY created_at DESC
+INNER JOIN categories ON courses.category_id = categories.id
+INNER JOIN users ON courses.user_id = users.username
+ORDER BY courses.created_at DESC
 LIMIT $1
 OFFSET $2;
 
 -- name: ListCoursesByUserID :many
 SELECT * FROM courses
+INNER JOIN categories ON courses.category_id = categories.id
+INNER JOIN users ON courses.user_id = users.username
 WHERE user_id = $1
-ORDER BY id
+ORDER BY courses.created_at DESC
 LIMIT $2
 OFFSET $3;
 

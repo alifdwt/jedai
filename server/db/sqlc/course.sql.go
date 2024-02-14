@@ -8,6 +8,7 @@ package db
 import (
 	"context"
 	"database/sql"
+	"time"
 )
 
 const createCourse = `-- name: CreateCourse :one
@@ -74,9 +75,11 @@ func (q *Queries) DeleteCourse(ctx context.Context, id string) error {
 }
 
 const getCourse = `-- name: GetCourse :one
-SELECT id, user_id, title, description, image_url, price, is_published, category_id, created_at, updated_at FROM courses
-WHERE id = $1
-    AND user_id = $2
+SELECT courses.id, user_id, title, description, image_url, price, is_published, category_id, courses.created_at, updated_at, categories.id, name, username, hashed_password, full_name, email, password_changed_at, users.created_at FROM courses
+INNER JOIN categories ON courses.category_id = categories.id
+INNER JOIN users ON courses.user_id = users.username
+WHERE courses.id = $1 AND courses.user_id = $2
+ORDER BY courses.created_at DESC
 LIMIT 1
 `
 
@@ -85,9 +88,30 @@ type GetCourseParams struct {
 	UserID string `json:"user_id"`
 }
 
-func (q *Queries) GetCourse(ctx context.Context, arg GetCourseParams) (Course, error) {
+type GetCourseRow struct {
+	ID                string         `json:"id"`
+	UserID            string         `json:"user_id"`
+	Title             string         `json:"title"`
+	Description       sql.NullString `json:"description"`
+	ImageUrl          sql.NullString `json:"image_url"`
+	Price             sql.NullInt64  `json:"price"`
+	IsPublished       bool           `json:"is_published"`
+	CategoryID        string         `json:"category_id"`
+	CreatedAt         time.Time      `json:"created_at"`
+	UpdatedAt         time.Time      `json:"updated_at"`
+	ID_2              string         `json:"id_2"`
+	Name              string         `json:"name"`
+	Username          string         `json:"username"`
+	HashedPassword    string         `json:"hashed_password"`
+	FullName          string         `json:"full_name"`
+	Email             string         `json:"email"`
+	PasswordChangedAt time.Time      `json:"password_changed_at"`
+	CreatedAt_2       time.Time      `json:"created_at_2"`
+}
+
+func (q *Queries) GetCourse(ctx context.Context, arg GetCourseParams) (GetCourseRow, error) {
 	row := q.db.QueryRowContext(ctx, getCourse, arg.ID, arg.UserID)
-	var i Course
+	var i GetCourseRow
 	err := row.Scan(
 		&i.ID,
 		&i.UserID,
@@ -99,13 +123,23 @@ func (q *Queries) GetCourse(ctx context.Context, arg GetCourseParams) (Course, e
 		&i.CategoryID,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.ID_2,
+		&i.Name,
+		&i.Username,
+		&i.HashedPassword,
+		&i.FullName,
+		&i.Email,
+		&i.PasswordChangedAt,
+		&i.CreatedAt_2,
 	)
 	return i, err
 }
 
 const listCourses = `-- name: ListCourses :many
-SELECT id, user_id, title, description, image_url, price, is_published, category_id, created_at, updated_at FROM courses
-ORDER BY created_at DESC
+SELECT courses.id, user_id, title, description, image_url, price, is_published, category_id, courses.created_at, updated_at, categories.id, name, username, hashed_password, full_name, email, password_changed_at, users.created_at FROM courses
+INNER JOIN categories ON courses.category_id = categories.id
+INNER JOIN users ON courses.user_id = users.username
+ORDER BY courses.created_at DESC
 LIMIT $1
 OFFSET $2
 `
@@ -115,15 +149,36 @@ type ListCoursesParams struct {
 	Offset int32 `json:"offset"`
 }
 
-func (q *Queries) ListCourses(ctx context.Context, arg ListCoursesParams) ([]Course, error) {
+type ListCoursesRow struct {
+	ID                string         `json:"id"`
+	UserID            string         `json:"user_id"`
+	Title             string         `json:"title"`
+	Description       sql.NullString `json:"description"`
+	ImageUrl          sql.NullString `json:"image_url"`
+	Price             sql.NullInt64  `json:"price"`
+	IsPublished       bool           `json:"is_published"`
+	CategoryID        string         `json:"category_id"`
+	CreatedAt         time.Time      `json:"created_at"`
+	UpdatedAt         time.Time      `json:"updated_at"`
+	ID_2              string         `json:"id_2"`
+	Name              string         `json:"name"`
+	Username          string         `json:"username"`
+	HashedPassword    string         `json:"hashed_password"`
+	FullName          string         `json:"full_name"`
+	Email             string         `json:"email"`
+	PasswordChangedAt time.Time      `json:"password_changed_at"`
+	CreatedAt_2       time.Time      `json:"created_at_2"`
+}
+
+func (q *Queries) ListCourses(ctx context.Context, arg ListCoursesParams) ([]ListCoursesRow, error) {
 	rows, err := q.db.QueryContext(ctx, listCourses, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []Course{}
+	items := []ListCoursesRow{}
 	for rows.Next() {
-		var i Course
+		var i ListCoursesRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.UserID,
@@ -135,6 +190,14 @@ func (q *Queries) ListCourses(ctx context.Context, arg ListCoursesParams) ([]Cou
 			&i.CategoryID,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.ID_2,
+			&i.Name,
+			&i.Username,
+			&i.HashedPassword,
+			&i.FullName,
+			&i.Email,
+			&i.PasswordChangedAt,
+			&i.CreatedAt_2,
 		); err != nil {
 			return nil, err
 		}
@@ -150,9 +213,11 @@ func (q *Queries) ListCourses(ctx context.Context, arg ListCoursesParams) ([]Cou
 }
 
 const listCoursesByUserID = `-- name: ListCoursesByUserID :many
-SELECT id, user_id, title, description, image_url, price, is_published, category_id, created_at, updated_at FROM courses
+SELECT courses.id, user_id, title, description, image_url, price, is_published, category_id, courses.created_at, updated_at, categories.id, name, username, hashed_password, full_name, email, password_changed_at, users.created_at FROM courses
+INNER JOIN categories ON courses.category_id = categories.id
+INNER JOIN users ON courses.user_id = users.username
 WHERE user_id = $1
-ORDER BY id
+ORDER BY courses.created_at DESC
 LIMIT $2
 OFFSET $3
 `
@@ -163,15 +228,36 @@ type ListCoursesByUserIDParams struct {
 	Offset int32  `json:"offset"`
 }
 
-func (q *Queries) ListCoursesByUserID(ctx context.Context, arg ListCoursesByUserIDParams) ([]Course, error) {
+type ListCoursesByUserIDRow struct {
+	ID                string         `json:"id"`
+	UserID            string         `json:"user_id"`
+	Title             string         `json:"title"`
+	Description       sql.NullString `json:"description"`
+	ImageUrl          sql.NullString `json:"image_url"`
+	Price             sql.NullInt64  `json:"price"`
+	IsPublished       bool           `json:"is_published"`
+	CategoryID        string         `json:"category_id"`
+	CreatedAt         time.Time      `json:"created_at"`
+	UpdatedAt         time.Time      `json:"updated_at"`
+	ID_2              string         `json:"id_2"`
+	Name              string         `json:"name"`
+	Username          string         `json:"username"`
+	HashedPassword    string         `json:"hashed_password"`
+	FullName          string         `json:"full_name"`
+	Email             string         `json:"email"`
+	PasswordChangedAt time.Time      `json:"password_changed_at"`
+	CreatedAt_2       time.Time      `json:"created_at_2"`
+}
+
+func (q *Queries) ListCoursesByUserID(ctx context.Context, arg ListCoursesByUserIDParams) ([]ListCoursesByUserIDRow, error) {
 	rows, err := q.db.QueryContext(ctx, listCoursesByUserID, arg.UserID, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []Course{}
+	items := []ListCoursesByUserIDRow{}
 	for rows.Next() {
-		var i Course
+		var i ListCoursesByUserIDRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.UserID,
@@ -183,6 +269,14 @@ func (q *Queries) ListCoursesByUserID(ctx context.Context, arg ListCoursesByUser
 			&i.CategoryID,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.ID_2,
+			&i.Name,
+			&i.Username,
+			&i.HashedPassword,
+			&i.FullName,
+			&i.Email,
+			&i.PasswordChangedAt,
+			&i.CreatedAt_2,
 		); err != nil {
 			return nil, err
 		}

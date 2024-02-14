@@ -15,11 +15,11 @@ type Querier interface {
 	DeleteCategory(ctx context.Context, id string) error
 	DeleteCourse(ctx context.Context, id string) error
 	GetCategory(ctx context.Context, id string) (Category, error)
-	GetCourse(ctx context.Context, arg GetCourseParams) (Course, error)
+	GetCourse(ctx context.Context, arg GetCourseParams) (GetCourseRow, error)
 	GetUser(ctx context.Context, username string) (User, error)
 	ListCategories(ctx context.Context, arg ListCategoriesParams) ([]Category, error)
-	ListCourses(ctx context.Context, arg ListCoursesParams) ([]Course, error)
-	ListCoursesByUserID(ctx context.Context, arg ListCoursesByUserIDParams) ([]Course, error)
+	ListCourses(ctx context.Context, arg ListCoursesParams) ([]ListCoursesRow, error)
+	ListCoursesByUserID(ctx context.Context, arg ListCoursesByUserIDParams) ([]ListCoursesByUserIDRow, error)
 	UpdateCategory(ctx context.Context, arg UpdateCategoryParams) (Category, error)
 	UpdateCourse(ctx context.Context, arg UpdateCourseParams) (Course, error)
 }
