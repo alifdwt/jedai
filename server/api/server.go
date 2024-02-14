@@ -29,6 +29,10 @@ func (server *Server) setupRouter() {
 	router.GET("/categories/:id", server.getCategory)
 	router.GET("/categories", server.listCategories)
 
+	router.POST("/courses", server.createCourse)
+	router.GET("/courses/:id/:user_id", server.getCourse)
+	router.GET("/courses", server.listCourses)
+
 	server.router = router
 }
 
