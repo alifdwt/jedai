@@ -5,6 +5,8 @@ CREATE TABLE "users" (
   "hashed_password" varchar NOT NULL,
   "full_name" varchar NOT NULL,
   "email" varchar UNIQUE NOT NULL,
+  "image_url" varchar NOT NULL,
+  "banner_url" varchar NOT NULL,
   "password_changed_at" timestamptz NOT NULL DEFAULT '0001-01-01 00:00:00Z',
   "created_at" timestamptz NOT NULL DEFAULT (now())
 );
@@ -13,9 +15,9 @@ CREATE TABLE "courses" (
   "id" varchar PRIMARY KEY DEFAULT (uuid_generate_v4()),
   "user_id" varchar NOT NULL,
   "title" varchar NOT NULL,
-  "description" varchar,
-  "image_url" varchar,
-  "price" bigint,
+  "description" varchar NOT NULL,
+  "image_url" varchar NOT NULL,
+  "price" bigint NOT NULL,
   "is_published" bool NOT NULL,
   "category_id" varchar NOT NULL,
   "created_at" timestamptz NOT NULL DEFAULT (now()),
@@ -39,8 +41,8 @@ CREATE TABLE "attachments" (
 CREATE TABLE "chapters" (
   "id" varchar PRIMARY KEY DEFAULT (uuid_generate_v4()),
   "title" varchar NOT NULL,
-  "description" varchar,
-  "video_url" varchar,
+  "description" varchar NOT NULL,
+  "video_url" varchar NOT NULL,
   "position" bigint NOT NULL,
   "is_published" bool NOT NULL DEFAULT false,
   "is_free" bool NOT NULL DEFAULT false,
@@ -114,3 +116,13 @@ ALTER TABLE "purchases" ADD FOREIGN KEY ("user_id") REFERENCES "users" ("usernam
 ALTER TABLE "purchases" ADD FOREIGN KEY ("course_id") REFERENCES "courses" ("id");
 
 ALTER TABLE "stripe_customers" ADD FOREIGN KEY ("user_id") REFERENCES "users" ("username");
+
+CREATE VIEW "users_with_courses" AS
+SELECT
+  "users".*,
+  JSON_AGG("courses".*) AS "courses"
+FROM
+  "users"
+JOIN "courses" ON "users"."username" = "courses"."user_id"
+GROUP BY
+  "users"."username", "users"."email", "users"."hashed_password", "users"."full_name", "users"."image_url", "users"."banner_url", "users"."password_changed_at", "users"."created_at";

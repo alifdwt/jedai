@@ -7,7 +7,6 @@ package db
 
 import (
 	"context"
-	"database/sql"
 	"time"
 )
 
@@ -27,14 +26,14 @@ INSERT INTO courses (
 `
 
 type CreateCourseParams struct {
-	ID          string         `json:"id"`
-	UserID      string         `json:"user_id"`
-	Title       string         `json:"title"`
-	Description sql.NullString `json:"description"`
-	ImageUrl    sql.NullString `json:"image_url"`
-	Price       sql.NullInt64  `json:"price"`
-	IsPublished bool           `json:"is_published"`
-	CategoryID  string         `json:"category_id"`
+	ID          string `json:"id"`
+	UserID      string `json:"user_id"`
+	Title       string `json:"title"`
+	Description string `json:"description"`
+	ImageUrl    string `json:"image_url"`
+	Price       int64  `json:"price"`
+	IsPublished bool   `json:"is_published"`
+	CategoryID  string `json:"category_id"`
 }
 
 func (q *Queries) CreateCourse(ctx context.Context, arg CreateCourseParams) (Course, error) {
@@ -75,7 +74,7 @@ func (q *Queries) DeleteCourse(ctx context.Context, id string) error {
 }
 
 const getCourse = `-- name: GetCourse :one
-SELECT courses.id, user_id, title, description, image_url, price, is_published, category_id, courses.created_at, updated_at, categories.id, name, username, hashed_password, full_name, email, password_changed_at, users.created_at FROM courses
+SELECT courses.id, user_id, title, description, courses.image_url, price, is_published, category_id, courses.created_at, updated_at, categories.id, name, username, hashed_password, full_name, email, users.image_url, banner_url, password_changed_at, users.created_at FROM courses
 INNER JOIN categories ON courses.category_id = categories.id
 INNER JOIN users ON courses.user_id = users.username
 WHERE courses.id = $1 AND courses.user_id = $2
@@ -89,24 +88,26 @@ type GetCourseParams struct {
 }
 
 type GetCourseRow struct {
-	ID                string         `json:"id"`
-	UserID            string         `json:"user_id"`
-	Title             string         `json:"title"`
-	Description       sql.NullString `json:"description"`
-	ImageUrl          sql.NullString `json:"image_url"`
-	Price             sql.NullInt64  `json:"price"`
-	IsPublished       bool           `json:"is_published"`
-	CategoryID        string         `json:"category_id"`
-	CreatedAt         time.Time      `json:"created_at"`
-	UpdatedAt         time.Time      `json:"updated_at"`
-	ID_2              string         `json:"id_2"`
-	Name              string         `json:"name"`
-	Username          string         `json:"username"`
-	HashedPassword    string         `json:"hashed_password"`
-	FullName          string         `json:"full_name"`
-	Email             string         `json:"email"`
-	PasswordChangedAt time.Time      `json:"password_changed_at"`
-	CreatedAt_2       time.Time      `json:"created_at_2"`
+	ID                string    `json:"id"`
+	UserID            string    `json:"user_id"`
+	Title             string    `json:"title"`
+	Description       string    `json:"description"`
+	ImageUrl          string    `json:"image_url"`
+	Price             int64     `json:"price"`
+	IsPublished       bool      `json:"is_published"`
+	CategoryID        string    `json:"category_id"`
+	CreatedAt         time.Time `json:"created_at"`
+	UpdatedAt         time.Time `json:"updated_at"`
+	ID_2              string    `json:"id_2"`
+	Name              string    `json:"name"`
+	Username          string    `json:"username"`
+	HashedPassword    string    `json:"hashed_password"`
+	FullName          string    `json:"full_name"`
+	Email             string    `json:"email"`
+	ImageUrl_2        string    `json:"image_url_2"`
+	BannerUrl         string    `json:"banner_url"`
+	PasswordChangedAt time.Time `json:"password_changed_at"`
+	CreatedAt_2       time.Time `json:"created_at_2"`
 }
 
 func (q *Queries) GetCourse(ctx context.Context, arg GetCourseParams) (GetCourseRow, error) {
@@ -129,6 +130,8 @@ func (q *Queries) GetCourse(ctx context.Context, arg GetCourseParams) (GetCourse
 		&i.HashedPassword,
 		&i.FullName,
 		&i.Email,
+		&i.ImageUrl_2,
+		&i.BannerUrl,
 		&i.PasswordChangedAt,
 		&i.CreatedAt_2,
 	)
@@ -136,42 +139,46 @@ func (q *Queries) GetCourse(ctx context.Context, arg GetCourseParams) (GetCourse
 }
 
 const listCourses = `-- name: ListCourses :many
-SELECT courses.id, user_id, title, description, image_url, price, is_published, category_id, courses.created_at, updated_at, categories.id, name, username, hashed_password, full_name, email, password_changed_at, users.created_at FROM courses
+SELECT courses.id, user_id, title, description, courses.image_url, price, is_published, category_id, courses.created_at, updated_at, categories.id, name, username, hashed_password, full_name, email, users.image_url, banner_url, password_changed_at, users.created_at FROM courses
 INNER JOIN categories ON courses.category_id = categories.id
 INNER JOIN users ON courses.user_id = users.username
+WHERE courses.category_id LIKE $3
 ORDER BY courses.created_at DESC
 LIMIT $1
 OFFSET $2
 `
 
 type ListCoursesParams struct {
-	Limit  int32 `json:"limit"`
-	Offset int32 `json:"offset"`
+	Limit      int32  `json:"limit"`
+	Offset     int32  `json:"offset"`
+	CategoryID string `json:"category_id"`
 }
 
 type ListCoursesRow struct {
-	ID                string         `json:"id"`
-	UserID            string         `json:"user_id"`
-	Title             string         `json:"title"`
-	Description       sql.NullString `json:"description"`
-	ImageUrl          sql.NullString `json:"image_url"`
-	Price             sql.NullInt64  `json:"price"`
-	IsPublished       bool           `json:"is_published"`
-	CategoryID        string         `json:"category_id"`
-	CreatedAt         time.Time      `json:"created_at"`
-	UpdatedAt         time.Time      `json:"updated_at"`
-	ID_2              string         `json:"id_2"`
-	Name              string         `json:"name"`
-	Username          string         `json:"username"`
-	HashedPassword    string         `json:"hashed_password"`
-	FullName          string         `json:"full_name"`
-	Email             string         `json:"email"`
-	PasswordChangedAt time.Time      `json:"password_changed_at"`
-	CreatedAt_2       time.Time      `json:"created_at_2"`
+	ID                string    `json:"id"`
+	UserID            string    `json:"user_id"`
+	Title             string    `json:"title"`
+	Description       string    `json:"description"`
+	ImageUrl          string    `json:"image_url"`
+	Price             int64     `json:"price"`
+	IsPublished       bool      `json:"is_published"`
+	CategoryID        string    `json:"category_id"`
+	CreatedAt         time.Time `json:"created_at"`
+	UpdatedAt         time.Time `json:"updated_at"`
+	ID_2              string    `json:"id_2"`
+	Name              string    `json:"name"`
+	Username          string    `json:"username"`
+	HashedPassword    string    `json:"hashed_password"`
+	FullName          string    `json:"full_name"`
+	Email             string    `json:"email"`
+	ImageUrl_2        string    `json:"image_url_2"`
+	BannerUrl         string    `json:"banner_url"`
+	PasswordChangedAt time.Time `json:"password_changed_at"`
+	CreatedAt_2       time.Time `json:"created_at_2"`
 }
 
 func (q *Queries) ListCourses(ctx context.Context, arg ListCoursesParams) ([]ListCoursesRow, error) {
-	rows, err := q.db.QueryContext(ctx, listCourses, arg.Limit, arg.Offset)
+	rows, err := q.db.QueryContext(ctx, listCourses, arg.Limit, arg.Offset, arg.CategoryID)
 	if err != nil {
 		return nil, err
 	}
@@ -196,6 +203,8 @@ func (q *Queries) ListCourses(ctx context.Context, arg ListCoursesParams) ([]Lis
 			&i.HashedPassword,
 			&i.FullName,
 			&i.Email,
+			&i.ImageUrl_2,
+			&i.BannerUrl,
 			&i.PasswordChangedAt,
 			&i.CreatedAt_2,
 		); err != nil {
@@ -213,7 +222,7 @@ func (q *Queries) ListCourses(ctx context.Context, arg ListCoursesParams) ([]Lis
 }
 
 const listCoursesByUserID = `-- name: ListCoursesByUserID :many
-SELECT courses.id, user_id, title, description, image_url, price, is_published, category_id, courses.created_at, updated_at, categories.id, name, username, hashed_password, full_name, email, password_changed_at, users.created_at FROM courses
+SELECT courses.id, user_id, title, description, courses.image_url, price, is_published, category_id, courses.created_at, updated_at, categories.id, name, username, hashed_password, full_name, email, users.image_url, banner_url, password_changed_at, users.created_at FROM courses
 INNER JOIN categories ON courses.category_id = categories.id
 INNER JOIN users ON courses.user_id = users.username
 WHERE user_id = $1
@@ -229,24 +238,26 @@ type ListCoursesByUserIDParams struct {
 }
 
 type ListCoursesByUserIDRow struct {
-	ID                string         `json:"id"`
-	UserID            string         `json:"user_id"`
-	Title             string         `json:"title"`
-	Description       sql.NullString `json:"description"`
-	ImageUrl          sql.NullString `json:"image_url"`
-	Price             sql.NullInt64  `json:"price"`
-	IsPublished       bool           `json:"is_published"`
-	CategoryID        string         `json:"category_id"`
-	CreatedAt         time.Time      `json:"created_at"`
-	UpdatedAt         time.Time      `json:"updated_at"`
-	ID_2              string         `json:"id_2"`
-	Name              string         `json:"name"`
-	Username          string         `json:"username"`
-	HashedPassword    string         `json:"hashed_password"`
-	FullName          string         `json:"full_name"`
-	Email             string         `json:"email"`
-	PasswordChangedAt time.Time      `json:"password_changed_at"`
-	CreatedAt_2       time.Time      `json:"created_at_2"`
+	ID                string    `json:"id"`
+	UserID            string    `json:"user_id"`
+	Title             string    `json:"title"`
+	Description       string    `json:"description"`
+	ImageUrl          string    `json:"image_url"`
+	Price             int64     `json:"price"`
+	IsPublished       bool      `json:"is_published"`
+	CategoryID        string    `json:"category_id"`
+	CreatedAt         time.Time `json:"created_at"`
+	UpdatedAt         time.Time `json:"updated_at"`
+	ID_2              string    `json:"id_2"`
+	Name              string    `json:"name"`
+	Username          string    `json:"username"`
+	HashedPassword    string    `json:"hashed_password"`
+	FullName          string    `json:"full_name"`
+	Email             string    `json:"email"`
+	ImageUrl_2        string    `json:"image_url_2"`
+	BannerUrl         string    `json:"banner_url"`
+	PasswordChangedAt time.Time `json:"password_changed_at"`
+	CreatedAt_2       time.Time `json:"created_at_2"`
 }
 
 func (q *Queries) ListCoursesByUserID(ctx context.Context, arg ListCoursesByUserIDParams) ([]ListCoursesByUserIDRow, error) {
@@ -275,6 +286,8 @@ func (q *Queries) ListCoursesByUserID(ctx context.Context, arg ListCoursesByUser
 			&i.HashedPassword,
 			&i.FullName,
 			&i.Email,
+			&i.ImageUrl_2,
+			&i.BannerUrl,
 			&i.PasswordChangedAt,
 			&i.CreatedAt_2,
 		); err != nil {
@@ -300,15 +313,15 @@ RETURNING id, user_id, title, description, image_url, price, is_published, categ
 `
 
 type UpdateCourseParams struct {
-	ID          string         `json:"id"`
-	UserID      string         `json:"user_id"`
-	ID_2        string         `json:"id_2"`
-	Title       string         `json:"title"`
-	Description sql.NullString `json:"description"`
-	ImageUrl    sql.NullString `json:"image_url"`
-	Price       sql.NullInt64  `json:"price"`
-	IsPublished bool           `json:"is_published"`
-	CategoryID  string         `json:"category_id"`
+	ID          string `json:"id"`
+	UserID      string `json:"user_id"`
+	ID_2        string `json:"id_2"`
+	Title       string `json:"title"`
+	Description string `json:"description"`
+	ImageUrl    string `json:"image_url"`
+	Price       int64  `json:"price"`
+	IsPublished bool   `json:"is_published"`
+	CategoryID  string `json:"category_id"`
 }
 
 func (q *Queries) UpdateCourse(ctx context.Context, arg UpdateCourseParams) (Course, error) {

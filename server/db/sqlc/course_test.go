@@ -11,18 +11,17 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func createRandomCourse(t *testing.T) Course {
+func createRandomCourse(t *testing.T, categoryId string) Course {
 	user := createRandomUser(t)
-	category := createRandomCategory(t)
 	arg := CreateCourseParams{
 		ID:          util.RandomString(6),
 		UserID:      user.Username,
 		Title:       util.RandomOwner(),
-		Price:       sql.NullInt64{Int64: util.RandomMoney(), Valid: true},
-		Description: sql.NullString{String: util.RandomString(15), Valid: true},
-		ImageUrl:    sql.NullString{String: fmt.Sprintf("https://placehold.co/600x400?text=%s", user.Username), Valid: true},
+		Price:       util.RandomMoney(),
+		Description: util.RandomString(15),
+		ImageUrl:    fmt.Sprintf("https://placehold.co/600x400?text=%s", user.Username),
 		IsPublished: false,
-		CategoryID:  category.ID,
+		CategoryID:  categoryId,
 	}
 
 	course, err := testQueries.CreateCourse(context.Background(), arg)
@@ -42,12 +41,14 @@ func createRandomCourse(t *testing.T) Course {
 	return course
 }
 
-func TestCreateAccount(t *testing.T) {
-	createRandomCourse(t)
+func TestCreateCourse(t *testing.T) {
+	category := createRandomCategory(t)
+	createRandomCourse(t, category.ID)
 }
 
 func TestGetCourse(t *testing.T) {
-	course1 := createRandomCourse(t)
+	category := createRandomCategory(t)
+	course1 := createRandomCourse(t, category.ID)
 	arg := GetCourseParams{
 		ID:     course1.ID,
 		UserID: course1.UserID,
@@ -69,13 +70,16 @@ func TestGetCourse(t *testing.T) {
 }
 
 func TestListCourses(t *testing.T) {
+	var lastCourse Course
+	category := createRandomCategory(t)
 	for i := 0; i < 10; i++ {
-		createRandomCourse(t)
+		lastCourse = createRandomCourse(t, category.ID)
 	}
 
 	arg := ListCoursesParams{
-		Limit:  5,
-		Offset: 0,
+		Limit:      5,
+		Offset:     0,
+		CategoryID: fmt.Sprintf("%%%s%%", lastCourse.CategoryID),
 	}
 
 	courses, err := testQueries.ListCourses(context.Background(), arg)
@@ -89,8 +93,9 @@ func TestListCourses(t *testing.T) {
 
 func TestListCoursesByUserID(t *testing.T) {
 	var lastCourse Course
+	category := createRandomCategory(t)
 	for i := 0; i < 10; i++ {
-		lastCourse = createRandomCourse(t)
+		lastCourse = createRandomCourse(t, category.ID)
 	}
 
 	arg := ListCoursesByUserIDParams{
@@ -110,16 +115,17 @@ func TestListCoursesByUserID(t *testing.T) {
 }
 
 func TestUpdateCourse(t *testing.T) {
-	course1 := createRandomCourse(t)
+	category := createRandomCategory(t)
+	course1 := createRandomCourse(t, category.ID)
 
 	arg := UpdateCourseParams{
 		ID:          course1.ID,
 		ID_2:        util.RandomString(6),
 		UserID:      course1.UserID,
 		Title:       util.RandomOwner(),
-		Price:       sql.NullInt64{Int64: util.RandomMoney(), Valid: true},
-		Description: sql.NullString{String: util.RandomString(15), Valid: true},
-		ImageUrl:    sql.NullString{String: fmt.Sprintf("https://placehold.co/600x400?text=%s", course1.UserID), Valid: true},
+		Price:       util.RandomMoney(),
+		Description: util.RandomString(15),
+		ImageUrl:    fmt.Sprintf("https://placehold.co/600x400?text=%s", course1.UserID),
 		IsPublished: true,
 		CategoryID:  course1.CategoryID,
 	}
@@ -141,7 +147,8 @@ func TestUpdateCourse(t *testing.T) {
 }
 
 func TestDeleteCourse(t *testing.T) {
-	course1 := createRandomCourse(t)
+	category := createRandomCategory(t)
+	course1 := createRandomCourse(t, category.ID)
 	err := testQueries.DeleteCourse(context.Background(), course1.ID)
 	require.NoError(t, err)
 
