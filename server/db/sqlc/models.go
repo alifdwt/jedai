@@ -24,29 +24,29 @@ type Category struct {
 }
 
 type Chapter struct {
-	ID          string         `json:"id"`
-	Title       string         `json:"title"`
-	Description sql.NullString `json:"description"`
-	VideoUrl    sql.NullString `json:"video_url"`
-	Position    int64          `json:"position"`
-	IsPublished bool           `json:"is_published"`
-	IsFree      bool           `json:"is_free"`
-	CourseID    string         `json:"course_id"`
-	CreatedAt   time.Time      `json:"created_at"`
-	UpdatedAt   time.Time      `json:"updated_at"`
+	ID          string    `json:"id"`
+	Title       string    `json:"title"`
+	Description string    `json:"description"`
+	VideoUrl    string    `json:"video_url"`
+	Position    int64     `json:"position"`
+	IsPublished bool      `json:"is_published"`
+	IsFree      bool      `json:"is_free"`
+	CourseID    string    `json:"course_id"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
 }
 
 type Course struct {
-	ID          string         `json:"id"`
-	UserID      string         `json:"user_id"`
-	Title       string         `json:"title"`
-	Description sql.NullString `json:"description"`
-	ImageUrl    sql.NullString `json:"image_url"`
-	Price       sql.NullInt64  `json:"price"`
-	IsPublished bool           `json:"is_published"`
-	CategoryID  string         `json:"category_id"`
-	CreatedAt   time.Time      `json:"created_at"`
-	UpdatedAt   time.Time      `json:"updated_at"`
+	ID          string    `json:"id"`
+	UserID      string    `json:"user_id"`
+	Title       string    `json:"title"`
+	Description string    `json:"description"`
+	ImageUrl    string    `json:"image_url"`
+	Price       int64     `json:"price"`
+	IsPublished bool      `json:"is_published"`
+	CategoryID  string    `json:"category_id"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
 }
 
 type Mux struct {
@@ -77,6 +77,8 @@ type User struct {
 	HashedPassword    string    `json:"hashed_password"`
 	FullName          string    `json:"full_name"`
 	Email             string    `json:"email"`
+	ImageUrl          string    `json:"image_url"`
+	BannerUrl         string    `json:"banner_url"`
 	PasswordChangedAt time.Time `json:"password_changed_at"`
 	CreatedAt         time.Time `json:"created_at"`
 }
@@ -88,4 +90,16 @@ type UserProgress struct {
 	IsCompleted bool      `json:"is_completed"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
+}
+
+type UsersWithCourse struct {
+	Username          string    `json:"username"`
+	HashedPassword    string    `json:"hashed_password"`
+	FullName          string    `json:"full_name"`
+	Email             string    `json:"email"`
+	ImageUrl          string    `json:"image_url"`
+	BannerUrl         string    `json:"banner_url"`
+	PasswordChangedAt time.Time `json:"password_changed_at"`
+	CreatedAt         time.Time `json:"created_at"`
+	Courses           string    `json:"courses"`
 }

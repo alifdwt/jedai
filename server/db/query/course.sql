@@ -24,6 +24,7 @@ LIMIT 1;
 SELECT * FROM courses
 INNER JOIN categories ON courses.category_id = categories.id
 INNER JOIN users ON courses.user_id = users.username
+WHERE courses.category_id LIKE $3
 ORDER BY courses.created_at DESC
 LIMIT $1
 OFFSET $2;

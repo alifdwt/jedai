@@ -1,4 +1,3 @@
--- Drop tables
 DROP TABLE IF EXISTS stripe_customers;
 DROP TABLE IF EXISTS purchases;
 DROP TABLE IF EXISTS user_progress;

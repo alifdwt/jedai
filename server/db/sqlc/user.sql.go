@@ -14,10 +14,12 @@ INSERT INTO users (
     username,
     hashed_password,
     full_name,
-    email
+    email,
+    image_url,
+    banner_url
 ) VALUES (
-    $1, $2, $3, $4
-) RETURNING username, hashed_password, full_name, email, password_changed_at, created_at
+    $1, $2, $3, $4, $5, $6
+) RETURNING username, hashed_password, full_name, email, image_url, banner_url, password_changed_at, created_at
 `
 
 type CreateUserParams struct {
@@ -25,6 +27,8 @@ type CreateUserParams struct {
 	HashedPassword string `json:"hashed_password"`
 	FullName       string `json:"full_name"`
 	Email          string `json:"email"`
+	ImageUrl       string `json:"image_url"`
+	BannerUrl      string `json:"banner_url"`
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
@@ -33,6 +37,8 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		arg.HashedPassword,
 		arg.FullName,
 		arg.Email,
+		arg.ImageUrl,
+		arg.BannerUrl,
 	)
 	var i User
 	err := row.Scan(
@@ -40,27 +46,75 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		&i.HashedPassword,
 		&i.FullName,
 		&i.Email,
+		&i.ImageUrl,
+		&i.BannerUrl,
 		&i.PasswordChangedAt,
 		&i.CreatedAt,
 	)
 	return i, err
 }
 
-const getUser = `-- name: GetUser :one
-SELECT username, hashed_password, full_name, email, password_changed_at, created_at FROM users
-WHERE username = $1 LIMIT 1
+const getUserWithCourses = `-- name: GetUserWithCourses :one
+SELECT username, hashed_password, full_name, email, image_url, banner_url, password_changed_at, created_at, courses FROM users_with_courses
+WHERE username = $1
 `
 
-func (q *Queries) GetUser(ctx context.Context, username string) (User, error) {
-	row := q.db.QueryRowContext(ctx, getUser, username)
-	var i User
+func (q *Queries) GetUserWithCourses(ctx context.Context, username string) (UsersWithCourse, error) {
+	row := q.db.QueryRowContext(ctx, getUserWithCourses, username)
+	var i UsersWithCourse
 	err := row.Scan(
 		&i.Username,
 		&i.HashedPassword,
 		&i.FullName,
 		&i.Email,
+		&i.ImageUrl,
+		&i.BannerUrl,
 		&i.PasswordChangedAt,
 		&i.CreatedAt,
+		&i.Courses,
 	)
 	return i, err
+}
+
+const listUsers = `-- name: ListUsers :many
+SELECT username, hashed_password, full_name, email, image_url, banner_url, password_changed_at, created_at FROM users
+LIMIT $1
+OFFSET $2
+`
+
+type ListUsersParams struct {
+	Limit  int32 `json:"limit"`
+	Offset int32 `json:"offset"`
+}
+
+func (q *Queries) ListUsers(ctx context.Context, arg ListUsersParams) ([]User, error) {
+	rows, err := q.db.QueryContext(ctx, listUsers, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []User{}
+	for rows.Next() {
+		var i User
+		if err := rows.Scan(
+			&i.Username,
+			&i.HashedPassword,
+			&i.FullName,
+			&i.Email,
+			&i.ImageUrl,
+			&i.BannerUrl,
+			&i.PasswordChangedAt,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }

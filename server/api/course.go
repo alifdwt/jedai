@@ -2,7 +2,9 @@ package api
 
 import (
 	"database/sql"
+	"fmt"
 	"net/http"
+	"time"
 
 	db "github.com/alifdwt/jedai/server/db/sqlc"
 	"github.com/gin-gonic/gin"
@@ -29,6 +31,7 @@ type courseResponse struct {
 	Price       int64            `json:"price"`
 	IsPublished bool             `json:"is_published"`
 	Category    categoryResponse `json:"category"`
+	CreatedAt   time.Time        `json:"created_at"`
 }
 
 func (server *Server) createCourse(ctx *gin.Context) {
@@ -42,9 +45,9 @@ func (server *Server) createCourse(ctx *gin.Context) {
 		ID:          req.ID,
 		UserID:      req.UserID,
 		Title:       req.Title,
-		Description: sql.NullString{String: req.Description, Valid: true},
-		ImageUrl:    sql.NullString{String: req.ImageUrl, Valid: true},
-		Price:       sql.NullInt64{Int64: req.Price, Valid: true},
+		Description: req.Description,
+		ImageUrl:    req.ImageUrl,
+		Price:       req.Price,
 		IsPublished: req.IsPublished,
 		CategoryID:  req.CategoryID,
 	}
@@ -95,27 +98,31 @@ func (server *Server) getCourse(ctx *gin.Context) {
 	rsp := courseResponse{
 		ID: course.ID,
 		User: userResponse{
-			Username: course.UserID,
-			FullName: course.FullName,
-			Email:    course.Email,
+			Username:  course.UserID,
+			FullName:  course.FullName,
+			Email:     course.Email,
+			ImageUrl:  course.ImageUrl_2,
+			BannerUrl: course.BannerUrl,
 		},
 		Title:       course.Title,
-		Description: course.Description.String,
-		ImageUrl:    course.ImageUrl.String,
-		Price:       course.Price.Int64,
+		Description: course.Description,
+		ImageUrl:    course.ImageUrl,
+		Price:       course.Price,
 		IsPublished: course.IsPublished,
 		Category: categoryResponse{
 			ID:   course.CategoryID,
 			Name: course.Name,
 		},
+		CreatedAt: course.CreatedAt,
 	}
 
 	ctx.JSON(http.StatusOK, rsp)
 }
 
 type listCoursesRequest struct {
-	PageID   int32 `form:"page_id" binding:"required,min=1"`
-	PageSize int32 `form:"page_size" binding:"required,min=5"`
+	PageID     int32  `form:"page_id" binding:"required,min=1"`
+	PageSize   int32  `form:"page_size" binding:"required,min=5"`
+	CategoryID string `form:"category_id"`
 }
 
 func (server *Server) listCourses(ctx *gin.Context) {
@@ -126,8 +133,9 @@ func (server *Server) listCourses(ctx *gin.Context) {
 	}
 
 	arg := db.ListCoursesParams{
-		Limit:  req.PageSize,
-		Offset: (req.PageID - 1) * req.PageSize,
+		Limit:      req.PageSize,
+		Offset:     (req.PageID - 1) * req.PageSize,
+		CategoryID: fmt.Sprintf("%%%s%%", req.CategoryID),
 	}
 
 	courses, err := server.store.ListCourses(ctx, arg)
@@ -144,16 +152,18 @@ func (server *Server) listCourses(ctx *gin.Context) {
 				Username: course.UserID,
 				FullName: course.FullName,
 				Email:    course.Email,
+				ImageUrl: course.ImageUrl_2,
 			},
 			Title:       course.Title,
-			Description: course.Description.String,
-			ImageUrl:    course.ImageUrl.String,
-			Price:       course.Price.Int64,
+			Description: course.Description,
+			ImageUrl:    course.ImageUrl,
+			Price:       course.Price,
 			IsPublished: course.IsPublished,
 			Category: categoryResponse{
 				ID:   course.CategoryID,
 				Name: course.Name,
 			},
+			CreatedAt: course.CreatedAt,
 		})
 	}
 

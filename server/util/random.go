@@ -5,6 +5,9 @@ import (
 	"math/rand"
 	"strings"
 	"time"
+
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 const alphabet = "abcdefghijklmnopqrstuvwxyz"
@@ -30,7 +33,9 @@ func RandomString(n int) string {
 }
 
 func RandomOwner() string {
-	return fmt.Sprintf("%s %s", RandomString(6), RandomString(6))
+	// return capitalize first letter of each word
+	str := RandomString(6) + " " + RandomString(6)
+	return cases.Title(language.English).String(str)
 }
 
 func RandomMoney() int64 {
