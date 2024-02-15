@@ -19,8 +19,8 @@ func createRandomCourse(t *testing.T, categoryId string) Course {
 		Title:       util.RandomOwner(),
 		Price:       util.RandomMoney(),
 		Description: util.RandomString(15),
-		ImageUrl:    fmt.Sprintf("https://placehold.co/600x400?text=%s", user.Username),
-		IsPublished: false,
+		ImageUrl:    fmt.Sprintf("https://picsum.photos/id/%d/200/300", util.RandomInt(1, 30)),
+		IsPublished: true,
 		CategoryID:  categoryId,
 	}
 

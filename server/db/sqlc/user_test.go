@@ -40,17 +40,29 @@ func TestCreateUser(t *testing.T) {
 	createRandomUser(t)
 }
 
-// func TestGetUser(t *testing.T) {
-// 	user1 := createRandomUser(t)
-// 	user2, err := testQueries.GetUserWithCourses(context.Background(), user1.Username)
-// 	require.NoError(t, err)
-// 	require.NotEmpty(t, user2)
+func TestGetUserWithCourses(t *testing.T) {
+	category := createRandomCategory(t)
+	course := createRandomCourse(t, category.ID)
+	user2, err := testQueries.GetUserWithCourses(context.Background(), course.UserID)
+	require.NoError(t, err)
+	require.NotEmpty(t, user2)
+}
 
-// 	require.Equal(t, user1.Username, user2.Username)
-// 	require.Equal(t, user1.HashedPassword, user2.HashedPassword)
-// 	require.Equal(t, user1.FullName, user2.FullName)
-// 	require.Equal(t, user1.Email, user2.Email)
+func TestListUsers(t *testing.T) {
+	for i := 0; i < 10; i++ {
+		createRandomUser(t)
+	}
 
-// 	require.WithinDuration(t, user1.PasswordChangedAt, user2.PasswordChangedAt, time.Second)
-// 	require.WithinDuration(t, user1.CreatedAt, user2.CreatedAt, time.Second)
-// }
+	arg := ListUsersParams{
+		Limit:  5,
+		Offset: 0,
+	}
+
+	users, err := testQueries.ListUsers(context.Background(), arg)
+	require.NoError(t, err)
+	require.NotEmpty(t, users)
+
+	for _, user := range users {
+		require.NotEmpty(t, user)
+	}
+}
