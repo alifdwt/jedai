@@ -17,12 +17,12 @@ export function MainNav({ className }: React.HTMLAttributes<HTMLElement>) {
     {
       href: "/explore",
       label: "Explore",
-      active: pathname === "/explore",
+      active: pathname.includes("/explore"),
     },
     {
       href: "/classes",
       label: "Classes",
-      active: pathname === "/classes",
+      active: pathname.includes("/classes"),
     },
   ];
 

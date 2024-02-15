@@ -1,9 +1,7 @@
+import { redirect } from "next/navigation";
+
 const ExplorePage = () => {
-  return (
-    <div>
-      <h1 className="text-2xl">Ini adalah Explore Page</h1>
-    </div>
-  );
+  return redirect("/explore/videos");
 };
 
 export default ExplorePage;
